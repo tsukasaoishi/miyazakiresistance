@@ -122,7 +122,8 @@ module MiyazakiResistance
 
     attr_accessor :id
 
-    def initialize(args={})
+    def initialize(args)
+      args ||= {}
       self.id = nil
       args.each do |key, value|
         case self.class.all_columns[key.to_s]

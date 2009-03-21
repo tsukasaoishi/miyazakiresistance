@@ -8,16 +8,16 @@ MiyazakiResistance is a library like ActiveRecord to use Tokyo Tyrant.
 
 == SYNOPSIS:
 
-require 'miyazaki_resistance'
-class Example < MiyazakiResistance::Base
-  host_and_port "localhost", 1975
-  host_and_port "slave", 1975, :readonly
-  set_timeout 5
-  set_column :name, :string
-  set_column :age, :integer
-  set_column :birthday, :date
-  set_column :created_at, :datetime
-end
+  require 'miyazaki_resistance'
+  class Example < MiyazakiResistance::Base
+    host_and_port "localhost", 1975
+    host_and_port "slave", 1975, :readonly
+    set_timeout 5
+    set_column :name, :string
+    set_column :age, :integer
+    set_column :birthday, :date
+    set_column :created_at, :datetime
+  end
 
 == REQUIREMENTS:
 
