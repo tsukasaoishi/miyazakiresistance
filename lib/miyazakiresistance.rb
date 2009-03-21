@@ -127,18 +127,14 @@ module MiyazakiResistance
 
     def save
       time_column_check
-      self.id = con.genuid.to_i if new_record?
       con = connection(:write)
+      self.id = kaeru_timeout{con.genuid.to_i} if new_record?
       kaeru_timeout{con.put(self.id, raw_attributes)}
     rescue TimeoutError
       remove_pool(con)
       retry
     end
 
-    def create(args)
-      attributes = args
-      save
-    end
 
     def update_attributes(args)
       raise NewRecordError if new_record?
@@ -217,6 +213,12 @@ module MiyazakiResistance
       rescue TimeoutError
         remove_pool(con)
         retry
+      end
+
+      def create(args)
+        inst = self.new(args)
+        inst.save
+        inst
       end
     end
 
