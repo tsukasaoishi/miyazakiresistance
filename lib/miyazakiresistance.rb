@@ -149,7 +149,7 @@ module MiyazakiResistance
       self.id = kaeru_timeout{con.genuid.to_i} if new_record?
       kaeru_timeout do
         con.put(self.id, raw_attributes)
-        self.class.all_indexes.each {|index| con.setindex(index, TpkyoTyrant::RDBTBL::ITOPT)}
+        self.class.all_indexes.each {|index| con.setindex(index, TokyoTyrant::RDBTBL::ITOPT)}
       end
     rescue TimeoutError
       remove_pool(con)
@@ -301,8 +301,9 @@ module MiyazakiResistance
     def self.make_order(query, order)
       if order
         target, order_type = order.split
-        if self.all_columns.keys.include?(target)
-          type = self.all_columns[target]
+        if target == "id" || self.all_columns.keys.include?(target)
+          type = (target == "id" ? :integer : self.all_columns[target])
+          target = "" if target == "id"
           order_type ||= "asc"
           eval(%Q|query.setorder(target, TokyoTyrant::RDBQRY::QO#{type_upcase(type)}#{order_type.upcase})|)
         end
