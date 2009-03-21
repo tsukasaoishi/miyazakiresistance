@@ -20,6 +20,7 @@ module MiyazakiResistance
     module ClassMethods
       attr_accessor :connection_pool
       attr_accessor :all_columns
+      attr_accessor :all_indexes
       attr_accessor :timeout_time
 
       def host_and_port(host, port, target = :write)
@@ -34,11 +35,28 @@ module MiyazakiResistance
         self.timeout_time = seconds.to_i
       end
 
-      def set_column(name, type)
+      def set_column(name, type, index = :no_index)
         name = name.to_s
         self.__send__(:attr_accessor, name)
         self.all_columns ||= {}
         self.all_columns.update(name => type)
+        if index == :index
+          index_type =
+            if [:integer, :datetime, :date].include?(type)
+              TokyoTyrant::RDBTBL::ITDECIMAL
+            elsif type == :string
+              TokyoTyrant::RDBTBL::ITLEXICAL
+            end
+          self.all_indexes ||= []
+          self.all_indexes << name
+          con = connection(:write)
+          begin
+            con.setindex(name, index_type)
+          rescue TimeoutError
+            remove_pool(con)
+            retry
+          end
+        end
       end
 
       def connection(target = :read)
@@ -129,7 +147,10 @@ module MiyazakiResistance
       time_column_check
       con = connection(:write)
       self.id = kaeru_timeout{con.genuid.to_i} if new_record?
-      kaeru_timeout{con.put(self.id, raw_attributes)}
+      kaeru_timeout do
+        con.put(self.id, raw_attributes)
+        self.class.all_indexes.each {|index| con.setindex(index, TpkyoTyrant::RDBTBL::ITOPT)}
+      end
     rescue TimeoutError
       remove_pool(con)
       retry
