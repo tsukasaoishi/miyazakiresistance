@@ -38,6 +38,7 @@ module MiyazakiResistance
       def set_column(name, type, index = :no_index)
         name = name.to_s
         self.__send__(:attr_accessor, name)
+        self.all_indexes ||= []
         self.all_columns ||= {}
         self.all_columns.update(name => type)
         if index == :index
@@ -47,7 +48,6 @@ module MiyazakiResistance
             elsif type == :string
               TokyoTyrant::RDBTBL::ITLEXICAL
             end
-          self.all_indexes ||= []
           self.all_indexes << name
           con = connection(:write)
           begin
