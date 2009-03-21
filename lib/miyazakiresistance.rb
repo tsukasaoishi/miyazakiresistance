@@ -228,7 +228,7 @@ module MiyazakiResistance
       hash = {}
       self.class.all_columns.each do |col, type|
         value = self.__send__(col)
-        value = self.convert_date_to_i(value, type)
+        value = self.class.convert_date_to_i(value, type)
         hash.update(col.to_s => value)
       end
       hash
