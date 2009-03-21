@@ -7,18 +7,18 @@ Gem::Specification.new do |s|
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["FIXME full name"]
   s.date = %q{2009-03-21}
-  s.description = %q{FIX (describe your package)}
+  s.description = %q{MiyazakiResistance is a library like ActiveRecord to use Tokyo Tyrant.}
   s.email = ["FIXME email"]
   s.extra_rdoc_files = ["History.txt", "Manifest.txt", "README.rdoc"]
   s.files = ["History.txt", "Manifest.txt", "README.rdoc", "Rakefile", "lib/miyazakiresistance.rb"]
   s.has_rdoc = true
-  s.homepage = %q{FIX (url)}
+  s.homepage = %q{http://www.kaeruspoon.net/keywords/MiyazakiResistance}
   s.post_install_message = %q{PostInstall.txt}
   s.rdoc_options = ["--main", "README.rdoc"]
   s.require_paths = ["lib"]
   s.rubyforge_project = %q{miyazakiresistance}
   s.rubygems_version = %q{1.3.1}
-  s.summary = %q{FIX (describe your package)}
+  s.summary = %q{MiyazakiResistance is a library like ActiveRecord to use Tokyo Tyrant.}
 
   if s.respond_to? :specification_version then
     current_version = Gem::Specification::CURRENT_SPECIFICATION_VERSION

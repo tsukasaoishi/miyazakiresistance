@@ -1,32 +1,37 @@
 = miyazakiresistance
 
-* FIX (url)
+* http://www.kaeruspoon.net/keywords/MiyazakiResistance
 
 == DESCRIPTION:
 
-FIX (describe your package)
-
-== FEATURES/PROBLEMS:
-
-* FIX (list of features or problems)
+MiyazakiResistance is a library like ActiveRecord to use Tokyo Tyrant.
 
 == SYNOPSIS:
 
-  FIX (code sample of usage)
+require 'miyazaki_resistance'
+class Example < MiyazakiResistance::Base
+  host_and_port "localhost", 1975
+  host_and_port "slave", 1975, :readonly
+  set_timeout 5
+  set_column :name, :string
+  set_column :age, :integer
+  set_column :birthday, :date
+  set_column :created_at, :datetime
+end
 
 == REQUIREMENTS:
 
-* FIX (list of requirements)
+Tokyo Tyrant
 
 == INSTALL:
 
-* FIX (sudo gem install, anything else)
+* sudo gem install tsukasaoishi-miyazakiresistance
 
 == LICENSE:
 
 (The MIT License)
 
-Copyright (c) 2009 FIXME full name
+Copyright (c) 2009 Tsukasa OISHI
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
