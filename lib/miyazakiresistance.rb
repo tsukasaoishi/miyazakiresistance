@@ -242,7 +242,7 @@ module MiyazakiResistance
           if self.class.all_columns.keys.include?("#{col}_#{type}")
             now = Time.now
             now = Date.new(now.year, now.month, now.day) if type == "on"
-            self.__send__("#{col}_#{type}=", now)
+            self.__send__("#{col}_#{type}=", now) if self.__send__("#{col}_#{type}").nil? || col == "updated"
           end
         end
       end
