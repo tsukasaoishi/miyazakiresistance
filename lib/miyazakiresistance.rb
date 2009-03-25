@@ -3,15 +3,19 @@ $:.unshift(File.dirname(__FILE__)) unless
 
 require 'tokyotyrant'
 require 'timeout'
+require 'logger'
 
 module MiyazakiResistance
-  VERSION = '0.0.1'
+  VERSION = '0.0.2'
 
-  class NewRecordError < StandardError; end
-  class QueryError < StandardError; end
-  class AllTimeoutORConnectionPoolEmpty < StandardError; end
+  class MiyazakiResistanceError < StandardError; end
+  class TokyoTyrantConnectError < MiyazakiResistanceError; end
+  class NewRecordError < MiyazakiResistanceError; end
+  class QueryError < MiyazakiResistanceError; end
+  class MasterDropError < MiyazakiResistanceError; end
+  class AllTimeoutORConnectionPoolEmpty < MiyazakiResistanceError; end
 
-  module Connection
+  module TokyoConnection
     def self.included(base)
       base.extend ClassMethods
       base.__send__(:include, InstanceMethods)
@@ -23,12 +27,19 @@ module MiyazakiResistance
       attr_accessor :all_indexes
       attr_accessor :timeout_time
 
-      def host_and_port(host, port, target = :write)
-        self.connection_pool ||= {:read => [], :write => []}
+      def set_server(host, port, target = :readonly)
+        logger.debug "set_server host : #{host} port : #{port} target : #{target}"
+
+        self.connection_pool ||= {:read => [], :write => nil, :standby => nil}
         rdb = TokyoTyrant::RDBTBL.new
-        return unless rdb.open(host, port)
+        unless rdb.open(host, port)
+          logger.error "TokyoTyrantConnectError host : #{host} port : #{port} target : #{target}"
+          raise TokyoTyrantConnectError
+        end
+
         self.connection_pool[:read] << rdb
-        self.connection_pool[:write] << rdb if target == :write
+        self.connection_pool[:write] = rdb if target == :write
+        self.connection_pool[:standby] = rdb if target == :standby
       end
 
       def set_timeout(seconds)
@@ -36,39 +47,28 @@ module MiyazakiResistance
       end
 
       def set_column(name, type, index = :no_index)
-        name = name.to_s
-        self.__send__(:attr_accessor, name)
         self.all_indexes ||= []
         self.all_columns ||= {}
+        name = name.to_s
+        self.__send__(:attr_accessor, name)
         self.all_columns.update(name => type)
-        if index == :index
-          index_type =
-            if [:integer, :datetime, :date].include?(type)
-              TokyoTyrant::RDBTBL::ITDECIMAL
-            elsif type == :string
-              TokyoTyrant::RDBTBL::ITLEXICAL
-            end
-          self.all_indexes << name
-          con = connection(:write)
-          begin
-            con.setindex(name, index_type)
-          rescue TimeoutError
-            remove_pool(con)
-            retry
-          end
-        end
+
+        set_index(name, type) if index == :index
       end
 
-      def connection(target = :read)
-        check_pool(target)
-        self.connection_pool[target].sort_by{rand}.first
+      def read_connection
+        check_pool
+        self.connection_pool[:read].sort_by{rand}.first
+      end
+
+      def write_connection
+        self.connection_pool[:write]
       end
 
       def remove_pool(rdb)
-        [:read, :write].each do |target|
-          self.connection_pool[target].delete_if{|pool| pool == rdb}
-          check_pool(target)
-        end
+        self.connection_pool[:read].delete_if{|pool| pool == rdb}
+        check_pool
+        fail_over if rdb == self.connection_pool[:write]
       end
 
       def kaeru_timeout(&block)
@@ -80,14 +80,54 @@ module MiyazakiResistance
 
       private
 
-      def check_pool(target)
-        raise AllTimeoutORConnectionPoolEmpty if self.connection_pool[target].empty?
+      def all_connections
+        [self.connection_pool[:read], self.connection_pool[:write], self.connection_pool[:standby]].flatten.compact.uniq
+      end
+
+      def check_pool
+        return if self.connection_pool[:read] && !self.connection_pool[:read].empty?
+        logger.error "AllTimeoutORConnectionPoolEmpty"
+        raise AllTimeoutORConnectionPoolEmpty
+      end
+
+      def fail_over
+        unless self.connection_pool[:standby]
+          logger.error "MasterDropError"
+          raise MasterDropError
+        end
+
+        logger.info "master server failover"
+        self.connection_pool[:write] = self.connection_pool[:standby]
+        self.connection_pool[:standby] = nil
+      end
+
+      def set_index(name, type)
+        index_type = case type
+          when :integer, :datetime, :date
+            TokyoTyrant::RDBTBL::ITDECIMAL
+          when :string
+            TokyoTyrant::RDBTBL::ITLEXICAL
+          end
+
+        self.all_indexes << name
+        all_connections.each do |con|
+          begin
+            con.setindex(name, index_type)
+          rescue TimeoutError
+            remove_pool(con)
+            retry
+          end
+        end
       end
     end
 
     module InstanceMethods
-      def connection(target = :read)
-        self.class.connection(target)
+      def read_connection
+        self.class.read_connection
+      end
+
+      def write_connection
+        self.class.write_connection
       end
 
       def remove_pool(rdb)
@@ -100,11 +140,40 @@ module MiyazakiResistance
     end
   end
 
+  module MiyazakiLogger
+    def self.included(base)
+      base.class_eval do
+        @@logger = nil
+      end
+      base.extend ClassMethods
+      base.__send__(:include, InstanceMethods)
+    end
+
+    module ClassMethods
+      def logger
+        @@logger ||= Logger.new("miyazakiresistance.log")
+      end
+
+      def logger=(target)
+        @@logger = target
+      end
+    end
+
+    module InstanceMethods
+      def logger
+        self.class.logger
+      end
+    end
+  end
+
   class Base
-    include Connection
+    include TokyoConnection
+    include MiyazakiLogger
 
     OPERATIONS = {
       "=" => {:string => TokyoTyrant::RDBQRY::QCSTREQ, :integer => TokyoTyrant::RDBQRY::QCNUMEQ},
+      "!=" => {:string => ~TokyoTyrant::RDBQRY::QCSTREQ, :integer => ~TokyoTyrant::RDBQRY::QCNUMEQ},
+      "<>" => {:string => ~TokyoTyrant::RDBQRY::QCSTREQ, :integer => ~TokyoTyrant::RDBQRY::QCNUMEQ},
       "include" => {:string => TokyoTyrant::RDBQRY::QCSTRINC},
       "begin" => {:string => TokyoTyrant::RDBQRY::QCSTRBW},
       "end" => {:string => TokyoTyrant::RDBQRY::QCSTREW},
@@ -112,17 +181,19 @@ module MiyazakiResistance
       "anyinclude" => {:string => TokyoTyrant::RDBQRY::QCSTROR},
       "in" => {:string => TokyoTyrant::RDBQRY::QCSTROREQ, :integer => TokyoTyrant::RDBQRY::QCNUMOREQ},
       "=~" => {:string => TokyoTyrant::RDBQRY::QCSTRRX},
+      "!~" => {:string => ~TokyoTyrant::RDBQRY::QCSTRRX},
       ">" => {:integer => TokyoTyrant::RDBQRY::QCNUMGT},
       ">=" => {:integer => TokyoTyrant::RDBQRY::QCNUMGE},
       "<" => {:integer => TokyoTyrant::RDBQRY::QCNUMLT},
       "<=" => {:integer => TokyoTyrant::RDBQRY::QCNUMLE},
       "between" => {:integer => TokyoTyrant::RDBQRY::QCNUMBT}
     }
+    NOT_OPERATIONS = %w|include begin end allinclude anyinclude in between|
     DATE_TYPE = [:datetime, :date]
 
     attr_accessor :id
 
-    def initialize(args)
+    def initialize(args = nil)
       args ||= {}
       self.id = nil
       args.each do |key, value|
@@ -146,12 +217,9 @@ module MiyazakiResistance
 
     def save
       time_column_check
-      con = connection(:write)
+      con = write_connection
       self.id = kaeru_timeout{con.genuid.to_i} if new_record?
-      kaeru_timeout do
-        con.put(self.id, raw_attributes)
-        self.class.all_indexes.each {|index| con.setindex(index, TokyoTyrant::RDBTBL::ITOPT)}
-      end
+      kaeru_timeout {con.put(self.id, raw_attributes)}
     rescue TimeoutError
       remove_pool(con)
       retry
@@ -166,7 +234,7 @@ module MiyazakiResistance
 
     def destroy
       raise NewRecordError if new_record?
-      con = connection(:write)
+      con = write_connection
       kaeru_timeout{con.out(self.id)}
     rescue TimeoutError
       remove_pool(con)
@@ -202,7 +270,7 @@ module MiyazakiResistance
       end
 
       def find_by_query(mode, args={})
-        con = connection
+        con = read_connection
         query = TokyoTyrant::RDBQRY.new(con)
 
         limit = (mode == :first ? 1 : args[:limit])
@@ -224,7 +292,7 @@ module MiyazakiResistance
       end
 
       def count(args = {})
-        con = connection
+        con = read_connection
         if args.empty?
           kaeru_timeout{con.rnum}
         else
@@ -282,7 +350,7 @@ module MiyazakiResistance
     def self.find_by_ids(targets)
       targets.map do |key|
         begin
-          con = connection
+          con = read_connection
           data = kaeru_timeout{con.get(key)}
           inst = self.new(data)
           inst.id = key.to_i
@@ -318,7 +386,10 @@ module MiyazakiResistance
         param = conditions[1..-1]
 
         col, ope, exp, type = nil, nil, nil, nil
+        not_flag = false
         cond.split.each do |item|
+          next if %w|AND and|.include?(item)
+
           if self.all_columns.keys.include?(item)
             col = item
             type = self.all_columns[item]
@@ -330,6 +401,13 @@ module MiyazakiResistance
             work = type
             work = :integer if DATE_TYPE.include?(work)
             ope = OPERATIONS[item][work]
+            if not_flag
+              raise QueryError unless NOT_OPERATIONS.include?(item)
+              ope = ~ope
+              not_flag = false
+            end
+          elsif %w|NOT not|.include?(item)
+            not_flag = true
           else
             raise QueryError if col.nil? || type.nil? || ope.nil?
             exp = (item == "?" ? param.shift : item)
@@ -339,6 +417,7 @@ module MiyazakiResistance
           if col && type && ope && exp
             query.addcond(col, ope, exp.to_s)
             col, ope, exp, type = nil, nil, nil, nil
+            not_flag = false
           end
         end
       end
