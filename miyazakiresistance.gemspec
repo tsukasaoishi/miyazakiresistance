@@ -2,7 +2,7 @@
 
 Gem::Specification.new do |s|
   s.name = %q{miyazakiresistance}
-  s.version = "0.0.4"
+  s.version = "0.0.5"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Tsukasa OISHI"]
@@ -19,7 +19,6 @@ Gem::Specification.new do |s|
   s.rubyforge_project = %q{miyazakiresistance}
   s.rubygems_version = %q{1.3.1}
   s.summary = %q{MiyazakiResistance is a library like ActiveRecord to use Tokyo Tyrant.}
-
 
   if s.respond_to? :specification_version then
     current_version = Gem::Specification::CURRENT_SPECIFICATION_VERSION
