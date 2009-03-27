@@ -18,7 +18,7 @@ module MiyazakiResistance
 
         self.connection_pool ||= {:read => [], :write => nil, :standby => nil}
         rdb = TokyoTyrant::RDBTBL.new
-        unless rdb.open(host, port)
+        unless rdb.open(host.to_s, port)
           logger.error "TokyoTyrantConnectError host : #{host} port : #{port} target : #{target}"
           raise TokyoTyrantConnectError
         end
