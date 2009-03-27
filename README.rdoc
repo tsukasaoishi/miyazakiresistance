@@ -8,7 +8,7 @@ MiyazakiResistance is a library like ActiveRecord to use Tokyo Tyrant.
 
 == SYNOPSIS:
 
-  require 'miyazaki_resistance'
+  require 'miyazakiresistance'
   class Example < MiyazakiResistance::Base
     set_server "localhost", 1975, :write
     set_server "slave", 1975, :standby
