@@ -6,7 +6,7 @@ module MiyazakiResistance
       args ||= {}
       self.id = nil
       args.each do |key, value|
-        if key.empty?
+        if key.is_a?(String) && key.empty?
           key = :id
           value = value.to_i
         else
@@ -92,7 +92,6 @@ module MiyazakiResistance
         query = make_order(query, args[:order])
         query = make_conditions(query, args[:conditions])
         
-        now = Time.now
         results = kaeru_timeout{query.searchget}.map{|r| self.new(r)}
         limit.to_i == 1 ? results.first : results
       rescue TimeoutError
@@ -131,7 +130,7 @@ module MiyazakiResistance
       hash = {}
       self.class.all_columns.each do |col, type|
         value = self.__send__(col)
-        value = self.class.convert_date_to_i(value, type)
+        value = self.class.plastic_data(value, type)
         hash.update(col.to_s => value)
       end
       hash
