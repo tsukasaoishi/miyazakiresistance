@@ -2,15 +2,15 @@
 
 Gem::Specification.new do |s|
   s.name = %q{miyazakiresistance}
-  s.version = "0.0.2"
+  s.version = "0.0.3"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Tsukasa OISHI"]
-  s.date = %q{2009-03-25}
+  s.date = %q{2009-03-26}
   s.description = %q{MiyazakiResistance is a library like ActiveRecord to use Tokyo Tyrant.}
   s.email = ["tsukasa.oishi@gmail.com"]
   s.extra_rdoc_files = ["History.txt", "Manifest.txt", "README.rdoc"]
-  s.files = ["History.txt", "Manifest.txt", "README.rdoc", "Rakefile", "lib/miyazakiresistance.rb"]
+  s.files = ["History.txt", "Manifest.txt", "README.rdoc", "Rakefile", "lib/miyazakiresistance.rb", "lib/miyazaki_resistance/base.rb", "lib/miyazaki_resistance/error.rb", "lib/miyazaki_resistance/miyazaki_logger.rb", "lib/miyazaki_resistance/tokyo_connection.rb"]
   s.has_rdoc = true
   s.homepage = %q{http://www.kaeruspoon.net/keywords/MiyazakiResistance}
   s.post_install_message = %q{PostInstall.txt}

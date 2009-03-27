@@ -3,3 +3,7 @@ Manifest.txt
 README.rdoc
 Rakefile
 lib/miyazakiresistance.rb
+lib/miyazaki_resistance/base.rb
+lib/miyazaki_resistance/error.rb
+lib/miyazaki_resistance/miyazaki_logger.rb
+lib/miyazaki_resistance/tokyo_connection.rb
