@@ -53,8 +53,17 @@ module MiyazakiResistance
 
       def remove_pool(rdb)
         self.connection_pool[:read].delete_if{|pool| pool == rdb}
-        check_pool
-        fail_over if rdb == self.connection_pool[:write]
+
+        host, port = rdb.host, rdb.port
+        new_rdb = TokyoTyrant::RDBTBL.new
+        if new_rdb.open(host, port)
+          self.connection_pool[:read] << new_rdb
+          self.connection_pool[:write] = new_rdb if rdb == self.connection_pool[:write]
+        else
+          check_pool
+          fail_over if rdb == self.connection_pool[:write]
+        end
+        rdb.close
       end
 
       def kaeru_timeout(&block)
