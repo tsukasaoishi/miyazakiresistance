@@ -1,16 +1,19 @@
 $:.unshift(File.dirname(__FILE__)) unless
   $:.include?(File.dirname(__FILE__)) || $:.include?(File.expand_path(File.dirname(__FILE__)))
 
-require 'tokyotyrant'
-require 'timeout'
 require 'logger'
+require 'timeout'
+require 'tokyotyrant'
+
+Dir.glob("#{File.join(File.dirname(__FILE__), "../initializers")}/*.rb").each{|path| require path}
+
 require 'miyazaki_resistance/tokyo_connection'
 require 'miyazaki_resistance/miyazaki_logger'
 require 'miyazaki_resistance/base'
 require 'miyazaki_resistance/error'
 
 module MiyazakiResistance
-  VERSION = '0.0.3'
+  VERSION = '0.0.6'
 end
 
 MiyazakiResistance::Base.class_eval do

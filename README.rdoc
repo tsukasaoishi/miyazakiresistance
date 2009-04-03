@@ -19,6 +19,23 @@ MiyazakiResistance is a library like ActiveRecord to use Tokyo Tyrant.
     set_column :created_at, :datetime, :index
   end
 
+  work = Example.new
+  work.name = "tsukasa"
+  work.age = 34
+  work.birthday => Date.today
+  work.save
+
+  Example.create(:name => "oishi", :age => 14, :birthday => Date.today)
+
+  Example.count
+  Example.count(:conditions => ["name = ?", "oishi"])
+
+  Example.find(1)
+  Example.find([1,2])
+  Example.find(:first)
+  Example.find(:all)
+  Example.find(:all, :conditions => ["name = ? age = ?", "tsukasa", 34], :order => "created_at DESC", :offset => 1, :limit => 1)
+
 == REQUIREMENTS:
 
 Tokyo Tyrant
