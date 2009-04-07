@@ -69,7 +69,7 @@ module MiyazakiResistance
       def kaeru_timeout(&block)
         ret = nil
         thread = Thread.new{ret = yield}
-        raise TimeoutError unless thread.join(self.timeout_time || DEFAULT_TIMEOUT)
+        raise TimeoutError, "tokyo tyrant server response error" unless thread.join(self.timeout_time || DEFAULT_TIMEOUT)
         ret
       end
 
