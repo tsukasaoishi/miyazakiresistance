@@ -14,12 +14,12 @@ module MiyazakiResistance
       DEFAULT_TIMEOUT = 60
 
       def set_server(host, port, target = :readonly)
-        logger.debug "set_server host : #{host} port : #{port} target : #{target}"
+        logger_debug "set_server host : #{host} port : #{port} target : #{target}"
 
         self.connection_pool ||= {:read => [], :write => nil, :standby => nil}
         rdb = TokyoTyrant::RDBTBL.new
         unless rdb.open(host.to_s, port)
-          logger.error "TokyoTyrantConnectError host : #{host} port : #{port} target : #{target}"
+          logger_fatal "TokyoTyrantConnectError host : #{host} port : #{port} target : #{target}"
           raise TokyoTyrantConnectError
         end
 
@@ -60,6 +60,7 @@ module MiyazakiResistance
           self.connection_pool[:read] << new_rdb
           self.connection_pool[:write] = new_rdb if rdb == self.connection_pool[:write]
         else
+          logger_fatal "remove pool : host #{host} port : #{port}"
           check_pool
           fail_over if rdb == self.connection_pool[:write]
         end
@@ -69,7 +70,7 @@ module MiyazakiResistance
       def kaeru_timeout(&block)
         ret = nil
         thread = Thread.new{ret = yield}
-        raise TimeoutError unless thread.join(self.timeout_time || DEFAULT_TIMEOUT)
+        raise TimeoutError, "tokyo tyrant server response error" unless thread.join(self.timeout_time || DEFAULT_TIMEOUT)
         ret
       end
 
@@ -81,17 +82,17 @@ module MiyazakiResistance
 
       def check_pool
         return if self.connection_pool[:read] && !self.connection_pool[:read].empty?
-        logger.error "AllTimeoutORConnectionPoolEmpty"
+        logger_fatal "AllTimeoutORConnectionPoolEmpty"
         raise AllTimeoutORConnectionPoolEmpty
       end
 
       def fail_over
         unless self.connection_pool[:standby]
-          logger.error "MasterDropError"
+          logger_fatal "MasterDropError"
           raise MasterDropError
         end
 
-        logger.info "master server failover"
+        logger_fatal "master server failover"
         self.connection_pool[:write] = self.connection_pool[:standby]
         self.connection_pool[:standby] = nil
       end

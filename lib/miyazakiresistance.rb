@@ -13,7 +13,7 @@ require 'miyazaki_resistance/base'
 require 'miyazaki_resistance/error'
 
 module MiyazakiResistance
-  VERSION = '0.0.6'
+  VERSION = '0.0.8'
 end
 
 MiyazakiResistance::Base.class_eval do
