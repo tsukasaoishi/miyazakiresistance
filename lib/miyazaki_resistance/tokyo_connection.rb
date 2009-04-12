@@ -38,8 +38,6 @@ module MiyazakiResistance
         name = name.to_s
         self.__send__(:attr_accessor, name)
         self.all_columns.update(name => type)
-
-        set_index(name, type) if index == :index
       end
 
       def read_connection
@@ -95,26 +93,6 @@ module MiyazakiResistance
         logger_fatal "master server failover"
         self.connection_pool[:write] = self.connection_pool[:standby]
         self.connection_pool[:standby] = nil
-      end
-
-      def set_index(name, type)
-        index_type = case type
-          when :integer, :datetime, :date
-            TokyoTyrant::RDBTBL::ITDECIMAL
-          when :string
-            TokyoTyrant::RDBTBL::ITLEXICAL
-          end
-
-        self.all_indexes << name
-        all_connections.each do |con|
-          begin
-            con.setindex(name, index_type)
-            con.setindex(name, TokyoTyrant::RDBTBL::ITOPT)
-          rescue TimeoutError
-            remove_pool(con)
-            retry
-          end
-        end
       end
     end
 
