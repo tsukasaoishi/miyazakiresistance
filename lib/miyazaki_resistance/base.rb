@@ -110,7 +110,7 @@ module MiyazakiResistance
         else
           query = TokyoTyrant::RDBQRY.new(con)
           query = make_conditions(query, args[:conditions])
-          kaeru_timeout{query.search}.size
+          kaeru_timeout{query.searchcount}
         end
       rescue TimeoutError
         remove_pool(con)
