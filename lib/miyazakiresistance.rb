@@ -13,7 +13,7 @@ require 'miyazaki_resistance/base'
 require 'miyazaki_resistance/error'
 
 module MiyazakiResistance
-  VERSION = '0.0.9'
+  VERSION = '0.0.10'
 end
 
 MiyazakiResistance::Base.class_eval do
@@ -22,8 +22,8 @@ MiyazakiResistance::Base.class_eval do
 
   OPERATIONS = {
     "=" => {:string => TokyoTyrant::RDBQRY::QCSTREQ, :integer => TokyoTyrant::RDBQRY::QCNUMEQ},
-    "!=" => {:string => ~TokyoTyrant::RDBQRY::QCSTREQ, :integer => ~TokyoTyrant::RDBQRY::QCNUMEQ},
-    "<>" => {:string => ~TokyoTyrant::RDBQRY::QCSTREQ, :integer => ~TokyoTyrant::RDBQRY::QCNUMEQ},
+    "!=" => {:string => TokyoTyrant::RDBQRY::QCNEGATE | TokyoTyrant::RDBQRY::QCSTREQ, :integer => TokyoTyrant::RDBQRY::QCNEGATE | TokyoTyrant::RDBQRY::QCNUMEQ},
+    "<>" => {:string => TokyoTyrant::RDBQRY::QCNEGATE | TokyoTyrant::RDBQRY::QCSTREQ, :integer => TokyoTyrant::RDBQRY::QCNEGATE | TokyoTyrant::RDBQRY::QCNUMEQ},
     "include" => {:string => TokyoTyrant::RDBQRY::QCSTRINC},
     "begin" => {:string => TokyoTyrant::RDBQRY::QCSTRBW},
     "end" => {:string => TokyoTyrant::RDBQRY::QCSTREW},
@@ -31,7 +31,7 @@ MiyazakiResistance::Base.class_eval do
     "anyinclude" => {:string => TokyoTyrant::RDBQRY::QCSTROR},
     "in" => {:string => TokyoTyrant::RDBQRY::QCSTROREQ, :integer => TokyoTyrant::RDBQRY::QCNUMOREQ},
     "=~" => {:string => TokyoTyrant::RDBQRY::QCSTRRX},
-    "!~" => {:string => ~TokyoTyrant::RDBQRY::QCSTRRX},
+    "!~" => {:string => TokyoTyrant::RDBQRY::QCNEGATE | TokyoTyrant::RDBQRY::QCSTRRX},
     ">" => {:integer => TokyoTyrant::RDBQRY::QCNUMGT},
     ">=" => {:integer => TokyoTyrant::RDBQRY::QCNUMGE},
     "<" => {:integer => TokyoTyrant::RDBQRY::QCNUMLT},

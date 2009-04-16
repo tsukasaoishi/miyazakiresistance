@@ -194,6 +194,7 @@ module MiyazakiResistance
 
     def self.make_conditions(query, conditions)
       if conditions
+        add_cond_list = []
         cond = conditions.first
         param = conditions[1..-1]
 
@@ -215,7 +216,7 @@ module MiyazakiResistance
             ope = OPERATIONS[item][work]
             if not_flag
               raise QueryError unless NOT_OPERATIONS.include?(item)
-              ope = ~ope
+              ope = TokyoTyrant::RDBQRY::QCNEGATE | ope
               not_flag = false
             end
           elsif %w|NOT not|.include?(item)
@@ -231,11 +232,12 @@ module MiyazakiResistance
           end
 
           if col && type && ope && exp
-            query.addcond(col, ope, exp)
+            add_cond_list << [col, ope, exp]
             col, ope, exp, type = nil, nil, nil, nil
             not_flag = false
           end
         end
+        add_cond_list.reverse.each{|acl| query.addcond(*acl)}
       end
       query
     end
