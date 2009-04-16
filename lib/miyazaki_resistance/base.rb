@@ -103,6 +103,12 @@ module MiyazakiResistance
         find_by_ids([target]).first
       end
 
+      def find_and_update(first, args={})
+        list = self.find(first, args)
+        list = [list] unless list.is_a?(Array)
+        list.each {|inst| yield(inst) and inst.save}
+      end
+
       def count(args = {})
         con = read_connection
         if args.empty?
@@ -110,7 +116,7 @@ module MiyazakiResistance
         else
           query = TokyoTyrant::RDBQRY.new(con)
           query = make_conditions(query, args[:conditions])
-          kaeru_timeout{query.searchcount}
+          kaeru_timeout{query.search.count}
         end
       rescue TimeoutError
         remove_pool(con)
