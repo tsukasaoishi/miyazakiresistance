@@ -100,7 +100,7 @@ module MiyazakiResistance
       end
 
       def find_by_id(target)
-        find_by_ids([target])
+        find_by_ids([target]).first
       end
 
       def count(args = {})
