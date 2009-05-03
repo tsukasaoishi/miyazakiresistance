@@ -8,7 +8,6 @@ module MiyazakiResistance
     module ClassMethods
       attr_accessor :connection_pool
       attr_accessor :all_columns
-      attr_accessor :all_indexes
       attr_accessor :timeout_time
 
       DEFAULT_TIMEOUT = 60
@@ -33,7 +32,6 @@ module MiyazakiResistance
       end
 
       def set_column(name, type, index = :no_index)
-        self.all_indexes ||= []
         self.all_columns ||= {}
         name = name.to_s
         self.__send__(:attr_accessor, name)
