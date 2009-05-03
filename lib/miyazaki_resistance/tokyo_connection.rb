@@ -13,8 +13,6 @@ module MiyazakiResistance
       DEFAULT_TIMEOUT = 60
 
       def set_server(host, port, target = :readonly)
-        logger_debug "set_server host : #{host} port : #{port} target : #{target}"
-
         self.connection_pool ||= {:read => [], :write => nil, :standby => nil}
         rdb = TokyoTyrant::RDBTBL.new
         unless rdb.open(host.to_s, port)
