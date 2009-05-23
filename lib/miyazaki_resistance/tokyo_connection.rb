@@ -21,12 +21,13 @@ module MiyazakiResistance
       def server_config(env, file = DEFAULT[:config])
         env = env.to_s
         conf = YAML.load_file(file)
+
+        class_variable_set("@@logger", Logger.new(config["log_file"])) if conf["log_file"]
+
         if (config = conf[env]).nil?
           logger_fatal "specified environment(#{env}) is not found in conig file(#{file})"
           return
         end
-
-        class_variable_set("@@logger", Logger.new(config["log_file"])) if config["log_file"]
 
         config["set_server"].each do |work|
           set_server work["server"], work["port"], work["role"]

@@ -58,7 +58,7 @@ MiyazakiResistance is a library like ActiveRecord to use Tokyo Tyrant.
       - server: localhost
         port: 1978
 	role: readonly
-    log_file: log/miyazakiresistance.log
+  log_file: log/miyazakiresistance.log
 
 == REQUIREMENTS:
 
