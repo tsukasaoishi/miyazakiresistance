@@ -10,11 +10,11 @@ module MiyazakiResistance
 
     module ClassMethods
       def logger
-        @@logger ||= Logger.new("miyazakiresistance.log")
+        class_variable_get("@@logger") || (logger = Logger.new("miyazakiresistance.log"))
       end
 
       def logger=(target)
-        @@logger = target
+        class_variable_set("@@logger", target)
       end
 
       %w|fatal error warn info debug|.each do|level|

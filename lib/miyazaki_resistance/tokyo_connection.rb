@@ -1,3 +1,4 @@
+require 'yaml'
 module MiyazakiResistance
   module TokyoConnection
     def self.included(base)
@@ -10,19 +11,43 @@ module MiyazakiResistance
       attr_accessor :all_columns
       attr_accessor :timeout_time
 
-      DEFAULT_TIMEOUT = 60
+      DEFAULT = {
+        :timeout => 60,
+        :config => "miyazakiresistance.yml",
+        :port => 1978,
+        :role => :readonly
+      }
 
-      def set_server(host, port, target = :readonly)
+      def server_config(env, file = DEFAULT[:config])
+        env = env.to_s
+        conf = YAML.load_file(file)
+        if (config = conf[env]).nil?
+          logger_fatal "specified environment(#{env}) is not found in conig file(#{file})"
+          return
+        end
+
+        class_variable_set("@@logger", Logger.new(config["log_file"])) if config["log_file"]
+
+        config["set_server"].each do |work|
+          set_server work["server"], work["port"], work["role"]
+        end
+      rescue Errno::ENOENT => e
+        logger_fatal "config file is not found : #{file}"
+      end
+
+      def set_server(host, port = DEFAULT[:port], role = DEFAULT[:role])
         self.connection_pool ||= {:read => [], :write => nil, :standby => nil}
         rdb = TokyoTyrant::RDBTBL.new
+        logger_info "set server host : #{host} port : #{port} role : #{role}"
+
         unless rdb.open(host.to_s, port)
-          logger_fatal "TokyoTyrantConnectError host : #{host} port : #{port} target : #{target}"
+          logger_fatal "TokyoTyrantConnectError host : #{host} port : #{port} role : #{role}"
           raise TokyoTyrantConnectError
         end
 
         self.connection_pool[:read] << rdb
-        self.connection_pool[:write] = rdb if target == :write
-        self.connection_pool[:standby] = rdb if target == :standby
+        self.connection_pool[:write] = rdb if role.to_sym == :write
+        self.connection_pool[:standby] = rdb if role.to_sym == :standby
       end
 
       def set_timeout(seconds)
@@ -64,7 +89,7 @@ module MiyazakiResistance
       def kaeru_timeout(&block)
         ret = nil
         thread = Thread.new{ret = yield}
-        raise TimeoutError, "tokyo tyrant server response error" unless thread.join(self.timeout_time || DEFAULT_TIMEOUT)
+        raise TimeoutError, "tokyo tyrant server response error" unless thread.join(self.timeout_time || DEFAULT[:timeout])
         ret
       end
 

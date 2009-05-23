@@ -36,6 +36,30 @@ MiyazakiResistance is a library like ActiveRecord to use Tokyo Tyrant.
   Example.find(:all)
   Example.find(:all, :conditions => ["name = ? age = ?", "tsukasa", 34], :order => "created_at DESC", :offset => 1, :limit => 1)
 
+
+  * You can write in config file
+
+  require 'miyazakiresistance'
+  class Example < MiyazakiResistance::Base
+    server_config Rails.env, "log/miyazakiresistance.yml"
+    set_timeout 60
+    set_column :name, :string
+    set_column :age, :integer
+    set_column :birthday, :date
+    set_column :created_at, :datetime
+  end
+
+  'in log/miyazakiresistance.log'
+  developemnt:
+    set_server:
+      - server: localhost
+        port: 1975
+	role: write
+      - server: localhost
+        port: 1978
+	role: readonly
+    log_file: log/miyazakiresistance.log
+
 == REQUIREMENTS:
 
 Tokyo Tyrant
