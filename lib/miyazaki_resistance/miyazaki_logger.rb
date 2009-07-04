@@ -10,7 +10,7 @@ module MiyazakiResistance
 
     module ClassMethods
       def logger
-        class_variable_get("@@logger") || (logger = Logger.new("miyazakiresistance.log"))
+        class_variable_get("@@logger") || (logger = Logger.new(default_log_file_path))
       end
 
       def logger=(target)
@@ -33,6 +33,10 @@ module MiyazakiResistance
 
       def log_msg(str)
         "[#{Time.now.strftime("%Y/%m/%d %H:%M:%S")}] #{str}"
+      end
+
+      def default_log_file_path
+        File.directory?("log") ? "log/miyazakiresistance.log" : "miyazakiresistance.log"
       end
     end
 

@@ -35,6 +35,8 @@ MiyazakiResistance is a library like ActiveRecord to use Tokyo Tyrant.
   Example.find(:first)
   Example.find(:all)
   Example.find(:all, :conditions => ["name = ? age = ?", "tsukasa", 34], :order => "created_at DESC", :offset => 1, :limit => 1)
+  Example.find_by_name("tsukasa")
+  Example.find_all_by_name_and_age("tsukasa", 34)
 
 
   * You can write in config file
@@ -58,7 +60,6 @@ MiyazakiResistance is a library like ActiveRecord to use Tokyo Tyrant.
       - server: localhost
         port: 1978
 	role: readonly
-  log_file: log/miyazakiresistance.log
 
 == REQUIREMENTS:
 

@@ -6,18 +6,15 @@ require 'timeout'
 require 'tokyotyrant'
 
 Dir.glob("#{File.join(File.dirname(__FILE__), "../initializers")}/*.rb").each{|path| require path}
-
-require 'miyazaki_resistance/tokyo_connection'
-require 'miyazaki_resistance/miyazaki_logger'
-require 'miyazaki_resistance/base'
-require 'miyazaki_resistance/error'
+Dir.glob("#{File.join(File.dirname(__FILE__), "miyazaki_resistance")}/*.rb").each{|path| require path}
 
 module MiyazakiResistance
-  VERSION = '0.1.2'
+  VERSION = '0.1.3'
 end
 
 MiyazakiResistance::Base.class_eval do
   include MiyazakiResistance::TokyoConnection
+  include MiyazakiResistance::Enhance
   include MiyazakiResistance::MiyazakiLogger
 
   OPERATIONS = {
