@@ -12,7 +12,7 @@ module MiyazakiResistance
       attr_accessor :timeout_time
 
       DEFAULT = {
-        :timeout => 60,
+        :timeout => 5,
         :config => "miyazakiresistance.yml",
         :port => 1978,
         :role => :readonly
@@ -39,14 +39,14 @@ module MiyazakiResistance
         rdb = TokyoTyrant::RDBTBL.new
         logger_info "set server host : #{host} port : #{port} role : #{role}"
 
-        unless rdb.open(host.to_s, port)
-          logger_fatal "TokyoTyrantConnectError host : #{host} port : #{port} role : #{role}"
-          raise TokyoTyrantConnectError
-        end
+        rdb.set_server(host.to_s, port)
 
-        self.connection_pool[:read] << rdb
-        self.connection_pool[:write] = rdb if role.to_sym == :write
-        self.connection_pool[:standby] = rdb if role.to_sym == :standby
+        if role.to_sym == :standby
+          self.connection_pool[:standby] = rdb
+        else
+          self.connection_pool[:read] << rdb
+          self.connection_pool[:write] = rdb if role.to_sym == :write
+        end
       end
 
       def set_timeout(seconds)
@@ -60,13 +60,23 @@ module MiyazakiResistance
         self.all_columns.update(name => type)
       end
 
+      def connection(con)
+        unless con.open?
+          unless con.open
+            logger_fatal "TokyoTyrantConnectError host : #{con.host} port : #{con.port}"
+            raise TokyoTyrantConnectError
+          end
+        end
+        con
+      end
+
       def read_connection
         check_pool
-        self.connection_pool[:read].sort_by{rand}.first
+        connection(self.connection_pool[:read].sort_by{rand}.first)
       end
 
       def write_connection
-        self.connection_pool[:write]
+        connection(self.connection_pool[:write])
       end
 
       def remove_pool(rdb)
@@ -79,7 +89,6 @@ module MiyazakiResistance
           self.connection_pool[:write] = new_rdb if rdb == self.connection_pool[:write]
         else
           logger_fatal "remove pool : host #{host} port : #{port}"
-          check_pool
           fail_over if rdb == self.connection_pool[:write]
         end
         rdb.close
@@ -112,6 +121,7 @@ module MiyazakiResistance
 
         logger_fatal "master server failover"
         self.connection_pool[:write] = self.connection_pool[:standby]
+        self.connection_pool[:read] << self.connection_pool[:standby]
         self.connection_pool[:standby] = nil
       end
     end

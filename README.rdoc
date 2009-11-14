@@ -5,6 +5,8 @@
 == DESCRIPTION:
 
 MiyazakiResistance is a library like ActiveRecord to use Tokyo Tyrant.
+MiyazakiResistance support Master/Slave. If Slave server down, it separates automatically.
+MiyazakiResistance support Dual Master(Active/Standby). If Active server down, Standby server become Active.
 
 == SYNOPSIS:
 
@@ -12,7 +14,7 @@ MiyazakiResistance is a library like ActiveRecord to use Tokyo Tyrant.
   class Example < MiyazakiResistance::Base
     set_server "localhost", 1975, :write
     set_server "slave", 1975, :standby
-    set_timeout 60
+    set_timeout 1
     set_column :name, :string
     set_column :age, :integer
     set_column :birthday, :date
@@ -67,7 +69,7 @@ Tokyo Tyrant
 
 == INSTALL:
 
-* sudo gem install tsukasaoishi-miyazakiresistance
+* sudo gem install miyazakiresistance
 
 == LICENSE:
 

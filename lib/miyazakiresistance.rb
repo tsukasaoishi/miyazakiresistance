@@ -9,7 +9,7 @@ Dir.glob("#{File.join(File.dirname(__FILE__), "../initializers")}/*.rb").each{|p
 Dir.glob("#{File.join(File.dirname(__FILE__), "miyazaki_resistance")}/*.rb").each{|path| require path}
 
 module MiyazakiResistance
-  VERSION = '0.1.3'
+  VERSION = '0.1.4'
 end
 
 MiyazakiResistance::Base.class_eval do
