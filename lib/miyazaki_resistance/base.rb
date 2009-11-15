@@ -109,6 +109,10 @@ module MiyazakiResistance
         list.each {|inst| yield(inst) and inst.save}
       end
 
+      def first(args = {})
+        find(:first, args)
+      end
+
       def count(args = {})
         con = read_connection
         if args.empty?
@@ -116,7 +120,21 @@ module MiyazakiResistance
         else
           query = TokyoTyrant::RDBQRY.new(con)
           query = make_conditions(query, args[:conditions])
-          kaeru_timeout{query.search.count}
+          query.respond_to?(:searchcount) ? kaeru_timeout{query.searchcount} : kaeru_timeout{query.search.count}
+        end
+      rescue TimeoutError
+        remove_pool(con)
+        retry
+      end
+
+      def delete_all(args = [])
+        con = write_connection
+        if args.empty?
+          con.vanish
+        else
+          query = TokyoTyrant::RDBQRY.new(con)
+          query = make_conditions(query, args)
+          kaeru_timeout{query.searchout}
         end
       rescue TimeoutError
         remove_pool(con)
