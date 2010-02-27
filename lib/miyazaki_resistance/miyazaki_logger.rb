@@ -1,3 +1,5 @@
+require 'logger'
+
 module MiyazakiResistance
   module MiyazakiLogger
     def self.included(base)

@@ -1,4 +1,7 @@
+require 'tokyotyrant'
+require 'timeout'
 require 'yaml'
+
 module MiyazakiResistance
   module TokyoConnection
     def self.included(base)

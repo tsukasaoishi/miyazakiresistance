@@ -1,3 +1,5 @@
+require 'tokyotyrant'
+
 module TokyoTyrant
   class RDB
     attr_accessor :host, :port, :open_flag
