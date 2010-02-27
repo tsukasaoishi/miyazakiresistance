@@ -26,7 +26,7 @@ module MiyazakiResistance
         conf = YAML.load_file(file)
 
         if (config = conf[env]).nil?
-          logger_fatal "specified environment(#{env}) is not found in conig file(#{file})"
+          MR::MiyazakiLogger.fatal "specified environment(#{env}) is not found in conig file(#{file})"
           return
         end
 
@@ -34,13 +34,13 @@ module MiyazakiResistance
           set_server work["server"], work["port"], work["role"]
         end
       rescue Errno::ENOENT => e
-        logger_fatal "config file is not found : #{file}"
+        MR::MiyazakiLogger.fatal "config file is not found : #{file}"
       end
 
       def set_server(host, port = DEFAULT[:port], role = DEFAULT[:role])
         self.connection_pool ||= {:read => [], :write => nil, :standby => nil}
         rdb = TokyoTyrant::RDBTBL.new
-        logger_info "set server host : #{host} port : #{port} role : #{role}"
+        MR::MiyazakiLogger.info "set server host : #{host} port : #{port} role : #{role}"
 
         rdb.set_server(host.to_s, port)
 
@@ -66,7 +66,7 @@ module MiyazakiResistance
       def connection(con)
         unless con.open?
           unless con.open
-            logger_fatal "TokyoTyrantConnectError host : #{con.host} port : #{con.port}"
+            MR::MiyazakiLogger.fatal "TokyoTyrantConnectError host : #{con.host} port : #{con.port}"
             raise TokyoTyrantConnectError
           end
         end
@@ -91,7 +91,7 @@ module MiyazakiResistance
           self.connection_pool[:read] << new_rdb
           self.connection_pool[:write] = new_rdb if rdb == self.connection_pool[:write]
         else
-          logger_fatal "remove pool : host #{host} port : #{port}"
+          MR::MiyazakiLogger.fatal "remove pool : host #{host} port : #{port}"
           fail_over if rdb == self.connection_pool[:write]
         end
         rdb.close
@@ -112,17 +112,17 @@ module MiyazakiResistance
 
       def check_pool
         return if self.connection_pool[:read] && !self.connection_pool[:read].empty?
-        logger_fatal "AllTimeoutORConnectionPoolEmpty"
+        MR::MiyazakiLogger.fatal "AllTimeoutORConnectionPoolEmpty"
         raise AllTimeoutORConnectionPoolEmpty
       end
 
       def fail_over
         unless self.connection_pool[:standby]
-          logger_fatal "MasterDropError"
+          MR::MiyazakiLogger.fatal "MasterDropError"
           raise MasterDropError
         end
 
-        logger_fatal "master server failover"
+        MR::MiyazakiLogger.fatal "master server failover"
         self.connection_pool[:write] = self.connection_pool[:standby]
         self.connection_pool[:read] << self.connection_pool[:standby]
         self.connection_pool[:standby] = nil

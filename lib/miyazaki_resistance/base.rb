@@ -2,7 +2,6 @@ module MiyazakiResistance
   class Base
     include MiyazakiResistance::TokyoConnection
     include MiyazakiResistance::Enhance
-    include MiyazakiResistance::MiyazakiLogger
 
     attr_accessor :id
 

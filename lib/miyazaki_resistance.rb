@@ -13,3 +13,5 @@ module MiyazakiResistance
   autoload :Enhance, "miyazaki_resistance/enhance"
   autoload :MiyazakiLogger, "miyazaki_resistance/miyazaki_logger"
 end
+
+MR = MiyazakiResistance

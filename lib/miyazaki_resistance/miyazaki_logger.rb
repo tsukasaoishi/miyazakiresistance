@@ -1,27 +1,21 @@
 require 'logger'
 
 module MiyazakiResistance
-  module MiyazakiLogger
-    def self.included(base)
-      base.class_eval do
-        @@logger = nil
-      end
-      base.extend ClassMethods
-      base.__send__(:include, InstanceMethods)
-    end
+  class MiyazakiLogger
+    @@logger = nil
 
-    module ClassMethods
+    class << self
       def logger
-        class_variable_get("@@logger") || (logger = Logger.new(default_log_file_path))
+        @@logger || (logger = Logger.new(default_log_file_path))
       end
 
       def logger=(target)
-        class_variable_set("@@logger", target)
+        @@logger = target
       end
 
       %w|fatal error warn info debug|.each do|level|
         self.class_eval %Q|
-          def logger_#{level}(str)
+          def #{level}(str)
             put_log(str, "#{level}")
           end
         |
@@ -39,20 +33,6 @@ module MiyazakiResistance
 
       def default_log_file_path
         File.directory?("log") ? "log/miyazakiresistance.log" : "miyazakiresistance.log"
-      end
-    end
-
-    module InstanceMethods
-      def logger
-        self.class.logger
-      end
-
-      %w|fatal error warn info debug|.each do|level|
-        self.class_eval %Q|
-          def logger_#{level}(str)
-            self.class.logger_#{level}g(str)
-          end
-        |
       end
     end
   end
