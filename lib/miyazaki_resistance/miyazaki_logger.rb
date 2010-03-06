@@ -4,6 +4,10 @@ module MiyazakiResistance
   class MiyazakiLogger
     @@logger = nil
 
+    def initialize(file)
+      @file = file
+    end
+
     class << self
       def logger
         @@logger || (logger = Logger.new(default_log_file_path))

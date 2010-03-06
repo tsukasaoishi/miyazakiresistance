@@ -3,30 +3,8 @@ module MiyazakiResistance
     attr_accessor :id
 
     def initialize(args = nil)
-      args ||= {}
       self.id = nil
-      args.each do |key, value|
-        if key.is_a?(String) && key.empty?
-          key = :id
-          value = value.to_i
-        else
-          case self.class.all_columns[key.to_s]
-          when :integer
-            value = value.to_i
-          when :string
-            value = value.to_s
-          when :datetime
-            value = Time.at(value.to_i) unless value.is_a?(Time)
-          when :date
-            unless value.is_a?(Date)
-              time = Time.at(value.to_i)
-              value = Date.new(time.year, time.month, time.day)
-            end
-          end
-        end
-        
-        self.__send__("#{key}=", value)
-      end
+      set_args(args || {})      
     end
 
     def save
@@ -53,16 +31,6 @@ module MiyazakiResistance
     rescue TimeoutError
       remove_pool(con)
       retry
-    end
-
-    def attributes
-      hash = {}
-      self.class.all_columns.keys.each{|key| hash.update(key => self.__send__(key))}
-      hash
-    end
-
-    def attributes=(args)
-      args.each {|key, value| self.__send__("#{key}=", value)}
     end
 
     def new_record?
@@ -167,33 +135,9 @@ module MiyazakiResistance
 
     private
 
-    def raw_attributes
-      hash = {}
-      self.class.all_columns.each do |col, type|
-        value = self.__send__(col)
-        value = self.class.plastic_data(value, type)
-        hash.update(col.to_s => value)
-      end
-      hash
-    end
-
-    def time_column_check
-      time_columns = ["updated"]
-      time_columns << "created" if new_record?
-      time_columns.each do |col|
-        %w|at on|.each do |type|
-          if self.class.all_columns.keys.include?("#{col}_#{type}")
-            now = Time.now
-            now = Date.new(now.year, now.month, now.day) if type == "on"
-            self.__send__("#{col}_#{type}=", now) if self.__send__("#{col}_#{type}").nil? || col == "updated"
-          end
-        end
-      end
-    end
-
     def self.type_upcase(type)
       case type
-      when :integer, :datetime, :date
+      when :number, :datetime, :date
         "NUM"
       when :string
         "STR"
@@ -281,18 +225,6 @@ module MiyazakiResistance
         add_cond_list.reverse.each{|acl| query.addcond(*acl)}
       end
       query
-    end
-
-    def self.plastic_data(value, type)
-      ret = case type
-      when :datetime
-        value.to_i
-      when :date
-        Time.local(value.year, value.month, value.day).to_i
-      else
-        value
-      end
-      ret.to_s
     end
 
     def self.finder_attribute_names(name)

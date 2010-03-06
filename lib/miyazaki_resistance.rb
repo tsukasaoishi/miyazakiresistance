@@ -9,8 +9,8 @@ module MiyazakiResistance
 end
 MR = MiyazakiResistance
 
-require "miyazaki_resistance/base"
+require "miyazaki_resistance/column"
 require "miyazaki_resistance/operation"
 require "miyazaki_resistance/connection"
-require "miyazaki_resistance/column"
+require "miyazaki_resistance/base"
 require "miyazaki_resistance/miyazaki_logger"
