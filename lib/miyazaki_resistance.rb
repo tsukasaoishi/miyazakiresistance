@@ -6,12 +6,11 @@ module MiyazakiResistance
   def self.version
     VERSION.join * ","
   end
-
-  autoload :Base, "miyazaki_resistance/base"
-  autoload :Operation, "miyazaki_resistance/operation"
-  autoload :TokyoConnection, "miyazaki_resistance/tokyo_connection"
-  autoload :Enhance, "miyazaki_resistance/enhance"
-  autoload :MiyazakiLogger, "miyazaki_resistance/miyazaki_logger"
 end
-
 MR = MiyazakiResistance
+
+require "miyazaki_resistance/base"
+require "miyazaki_resistance/operation"
+require "miyazaki_resistance/connection"
+require "miyazaki_resistance/column"
+require "miyazaki_resistance/miyazaki_logger"

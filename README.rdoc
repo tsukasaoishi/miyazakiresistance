@@ -12,13 +12,13 @@ MiyazakiResistance support Dual Master(Active/Standby). If Active server down, S
 
   require 'miyazakiresistance'
   class Example < MiyazakiResistance::Base
-    set_server "localhost", 1975, :write
-    set_server "slave", 1975, :standby
-    set_timeout 1
-    set_column :name, :string
-    set_column :age, :integer
-    set_column :birthday, :date
-    set_column :created_at, :datetime
+    server "localhost", 1975, :write
+    server "slave", 1975, :standby
+    timeout 1
+    column :name, :string
+    column :age, :integer
+    column :birthday, :date
+    column :created_at, :datetime
   end
 
   work = Example.new
@@ -48,11 +48,11 @@ MiyazakiResistance support Dual Master(Active/Standby). If Active server down, S
   require 'miyazakiresistance'
   class Example < MiyazakiResistance::Base
     server_config Rails.env, "log/miyazakiresistance.yml"
-    set_timeout 60
-    set_column :name, :string
-    set_column :age, :integer
-    set_column :birthday, :date
-    set_column :created_at, :datetime
+    timeout 60
+    column :name, :string
+    column :age, :integer
+    column :birthday, :date
+    column :created_at, :datetime
   end
 
   'in log/miyazakiresistance.log'

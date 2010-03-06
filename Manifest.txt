@@ -6,6 +6,6 @@ lib/miyazakiresistance.rb
 lib/miyazaki_resistance/base.rb
 lib/miyazaki_resistance/error.rb
 lib/miyazaki_resistance/miyazaki_logger.rb
-lib/miyazaki_resistance/tokyo_connection.rb
-lib/miyazaki_resistance/enhance.rb
+lib/miyazaki_resistance/connection.rb
+lib/miyazaki_resistance/column.rb
 initializers/rdb.rb
