@@ -12,11 +12,11 @@ MiyazakiResistance support Dual Master(Active/Standby). If Active server down, S
 
   require 'miyazakiresistance'
   class Example < MiyazakiResistance::Base
-    server "localhost", 1975, :write
-    server "slave", 1975, :standby
+    server :localhost, 1975, :write
+    server :slave_host, 1975, :standby
     timeout 1
     column :name, :string
-    column :age, :integer
+    column :age, :number
     column :birthday, :date
     column :created_at, :datetime
   end

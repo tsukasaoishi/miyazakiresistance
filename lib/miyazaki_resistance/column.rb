@@ -67,7 +67,7 @@ module MiyazakiResistance
         else
           case self.class.all_columns[key.to_s]
           when :number
-            value = (value =~ /\./) ? value.to_f : value.to_i if value && !value.empty?
+            value = (value =~ /\./) ? value.to_f : value.to_i if value
           when :string
             value = value.to_s if value
           when :datetime

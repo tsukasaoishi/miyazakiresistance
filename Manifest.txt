@@ -3,9 +3,11 @@ Manifest.txt
 README.rdoc
 Rakefile
 lib/miyazakiresistance.rb
+lib/miyazaki_resistance.rb
 lib/miyazaki_resistance/base.rb
 lib/miyazaki_resistance/error.rb
 lib/miyazaki_resistance/miyazaki_logger.rb
 lib/miyazaki_resistance/connection.rb
 lib/miyazaki_resistance/column.rb
+lib/miyazaki_resistance/operation.rb
 initializers/rdb.rb

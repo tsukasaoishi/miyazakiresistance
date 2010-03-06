@@ -168,7 +168,7 @@ module MiyazakiResistance
       if order
         target, order_type = order.split
         if target == "id" || self.all_columns.keys.include?(target)
-          type = (target == "id" ? :integer : self.all_columns[target])
+          type = (target == "id" ? :number : self.all_columns[target])
           target = "" if target == "id"
           order_type ||= "asc"
           eval(%Q|query.setorder(target, TokyoTyrant::RDBQRY::QO#{type_upcase(type)}#{order_type.upcase})|)
@@ -193,11 +193,11 @@ module MiyazakiResistance
             type = self.all_columns[item]
           elsif item == "id"
             col = ""
-            type = :integer
+            type = :number
           elsif OPERATIONS.keys.include?(item)
             raise QueryError if col.nil? || type.nil?
             work = type
-            work = :integer if DATE_TYPE.include?(work)
+            work = :number if DATE_TYPE.include?(work)
             ope = OPERATIONS[item][work]
             if not_flag
               raise QueryError unless NOT_OPERATIONS.include?(item)
