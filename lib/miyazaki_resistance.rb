@@ -4,7 +4,7 @@ module MiyazakiResistance
   VERSION = [0, 1, 6]
 
   def self.version
-    VERSION.join * ","
+    VERSION * "."
   end
 end
 MR = MiyazakiResistance
@@ -14,3 +14,4 @@ require "miyazaki_resistance/operation"
 require "miyazaki_resistance/connection"
 require "miyazaki_resistance/base"
 require "miyazaki_resistance/miyazaki_logger"
+require "miyazaki_resistance/error"

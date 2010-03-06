@@ -7,7 +7,7 @@ module MiyazakiResistance
     @@connection_manager = {}
 
     class <<self
-      %w|server_config server timeout|.each do |method|
+      %w|server_config server timeout remove_pool|.each do |method|
         class_eval %Q|
           def #{method}(*args)
             connection_or_create.#{method}(*args)
@@ -46,6 +46,10 @@ module MiyazakiResistance
 
     def write_connection
       self.class.write_connection
+    end
+
+    def remove_pool(con)
+      self.class.remove_pool(con)
     end
 
     def kaeru_timeout(&block)
